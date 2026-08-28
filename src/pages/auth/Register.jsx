@@ -20,7 +20,7 @@ function Register() {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/register', {
+            const response = await axios.post('https://bia2026-production.up.railway.app/api/register', {
                 name: name,
                 email: email,
                 password: password,
