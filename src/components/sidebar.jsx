@@ -40,7 +40,7 @@ const Sidebar = () => {
     useEffect(() => {
         let mounted = true;
 
-        fetch("http://localhost:8000/api/usn", {
+        fetch("https://bia2026-production.up.railway.app/api/usn", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

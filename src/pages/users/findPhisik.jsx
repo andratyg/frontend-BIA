@@ -146,7 +146,7 @@ function FindPhisik() {
             formData.append("image", blob, "photo.png");
 
             const response = await fetch(
-                "http://localhost:8000/api/analyze-image",
+                "https://bia2026-production.up.railway.app/api/analyze-image",
                 {
                     method: "POST",
                     body: formData,

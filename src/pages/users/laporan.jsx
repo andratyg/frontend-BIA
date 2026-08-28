@@ -26,7 +26,7 @@ function Laporan() {
     });
 
     const getData = () => {
-        fetch("http://localhost:8000/api/sensor/1")
+        fetch("https://bia2026-production.up.railway.app/api/sensor/1")
             .then((res) => res.json())
             .then((data) => {
                 console.log(data);

@@ -33,7 +33,7 @@ function Chat() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/chat', {
+            const response = await fetch('https://bia2026-production.up.railway.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

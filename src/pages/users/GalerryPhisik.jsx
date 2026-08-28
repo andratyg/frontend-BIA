@@ -9,7 +9,7 @@ function GalleryPhisik() {
     const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:8000/api/photos")
+        fetch("https://bia2026-production.up.railway.app/api/photos")
             .then(res => res.json())
             .then(data => {
                 setPhotos(data);
