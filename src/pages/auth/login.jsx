@@ -1,40 +1,98 @@
 import '../../app.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
+import { useAuth } from '../../context/AuthContext';
+import Swal from 'sweetalert2';
 
 function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
-    
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
 
         try {
-            
-            const response = await axios.post('http://127.0.0.1:8000/api/login', {
-                email: email,
-                password: password
+            const response = await apiClient.post('/login', {
+                email,
+                password,
             });
 
-            
-            localStorage.setItem('TOKEN', response.data.access_token);
+            const token = response.data.access_token;
+            const userData = response.data.user || {
+                id: response.data.id || response.data.user_id,
+                name: response.data.name,
+                email: response.data.email,
+            };
 
-            
-            navigate('/dashboard');
+            const existingSession = localStorage.getItem('session_id');
+            const activeSession = sessionStorage.getItem('active_session');
+
+            if (existingSession && !activeSession) {
+                setLoading(false);
+                Swal.fire({
+                    title: 'Sesi Aktif Terdeteksi',
+                    text: 'Akun ini sedang login di perangkat lain. Masuk sekarang akan menonaktifkan sesi tersebut.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Tetap Masuk',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-3xl p-6',
+                        confirmButton: 'bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2.5 rounded-xl mx-2 shadow-md',
+                        cancelButton: 'bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-5 py-2.5 rounded-xl mx-2',
+                    },
+                    buttonsStyling: false,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        login(token, userData);
+                        showSuccess('Berhasil Login!', 'Sesi lama dinonaktifkan.');
+                    }
+                });
+                return;
+            }
+
+            login(token, userData);
+            showSuccess('Berhasil Login!', 'Selamat datang kembali.');
         } catch (err) {
-            setError('Email atau Password salah, Bro!');
+            Swal.fire({
+                title: 'Login Gagal',
+                text: 'Email atau Password salah, Bro!',
+                icon: 'error',
+                confirmButtonText: 'Coba Lagi',
+                customClass: {
+                    popup: 'rounded-3xl p-6',
+                    confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md',
+                },
+                buttonsStyling: false,
+            });
             console.error(err);
         } finally {
-            setLoading(false);
+            if (existingSession && !activeSession) {
+                // do nothing, loading state handled above
+            } else {
+                setLoading(false);
+            }
         }
+    };
+
+    const showSuccess = (title, text) => {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: { popup: 'rounded-3xl p-6' }
+        }).then(() => {
+            navigate('/dashboard');
+        });
     };
 
     return (
@@ -52,9 +110,6 @@ function Login() {
                         <h2 className="text-3xl font-black text-stone-800 tracking-tight">Selamat Datang</h2>
                         <p className="text-stone-500 font-medium mt-2">Kelola laporan tanamanmu sekarang</p>
                     </div>
-
-                    
-                    {error && <div className="mb-4 p-3 bg-red-100 text-red-600 text-sm font-bold rounded-xl text-center">{error}</div>}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>

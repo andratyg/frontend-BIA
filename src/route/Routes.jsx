@@ -1,14 +1,18 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from '../layouts/Navbar.jsx';
 import Login from '../pages/auth/login.jsx';
-import Home from '../pages/Home.jsx';
+import Landing from '../pages/Landing.jsx';
 import Register from '../pages/auth/Register.jsx';
 import Dashboard from '../pages/users/dashboard.jsx';
 import FindPhisik from '../pages/users/findPhisik.jsx';
 import Laporan from '../pages/users/laporan.jsx';
 import GalleryPhisik from '../pages/users/GalerryPhisik.jsx';
 import Chat from '../pages/users/chat.jsx';
+import PlantMonitoring from '../pages/users/PlantMonitoring.jsx';
+import DeviceConnect from '../pages/users/DeviceConnect.jsx';
+import ThresholdSettings from '../pages/users/ThresholdSettings.jsx';
 import Sidebar from '../components/sidebar.jsx';
+import Home from '../pages/Home.jsx';
 
 function AppContent() {
     const location = useLocation();
@@ -19,7 +23,16 @@ function AppContent() {
         navbarOnly: ['/', '/login', '/register'],
 
         // Halaman yang menampilkan Sidebar (tanpa Navbar)
-        sidebarOnly: ['/dashboard', '/find-physic', '/laporan', '/gallery-physic', '/chat'],
+        sidebarOnly: [
+            '/dashboard',
+            '/find-physic',
+            '/laporan',
+            '/gallery-physic',
+            '/chat',
+            '/plants',
+            '/device',
+            '/threshold',
+        ],
     };
 
     const currentPath = location.pathname;
@@ -28,13 +41,9 @@ function AppContent() {
 
     return (
         <>
-            
             {showNavbar && <Navbar />}
-
-            
             {showSidebar && <Sidebar />}
 
-            
             <div className={showSidebar ? 'ml-[230px]' : ''}>
                 <Routes>
                     <Route path="/" element={<Home />} />
@@ -45,6 +54,9 @@ function AppContent() {
                     <Route path="/laporan" element={<Laporan />} />
                     <Route path="/gallery-physic" element={<GalleryPhisik />} />
                     <Route path="/chat" element={<Chat />} />
+                    <Route path="/plants" element={<PlantMonitoring />} />
+                    <Route path="/device" element={<DeviceConnect />} />
+                    <Route path="/threshold" element={<ThresholdSettings />} />
                 </Routes>
             </div>
         </>

@@ -21,10 +21,10 @@ function Home() {
   };
 
   const stats = [
-    { value: "10,000+", label: "Pengguna Aktif", emoji: "👥", color: "#FF6B6B" },
-    { value: "50,000+", label: "Tanaman Terpantau", emoji: "🌱", color: "#10B981" },
-    { value: "4.9", label: "Rating Pengguna", emoji: "⭐", color: "#F59E0B" },
-    { value: "99%", label: "Kepuasan", emoji: "💚", color: "#8B5CF6" }
+    { value: "10+", label: "Pengguna Aktif", emoji: "👥", color: "#FF6B6B" },
+    { value: "5+", label: "Tanaman Terpantau", emoji: "🌱", color: "#10B981" },
+    { value: "4.0", label: "Rating Pengguna", emoji: "⭐", color: "#F59E0B" },
+    { value: "80%", label: "Kepuasan", emoji: "💚", color: "#8B5CF6" }
   ];
 
   const services = [
@@ -38,7 +38,7 @@ function Home() {
     {
       emoji: "🔔",
       title: "Smart Notification",
-      desc: "Dapatkan notifikasi otomatis via email & WhatsApp saat tanaman membutuhkan perhatian khusus.",
+      desc: "Dapatkan notifikasi otomatis via alat berupa bunyi saat tanaman membutuhkan perhatian khusus.",
       color: "#3B82F6",
       bgLight: "rgba(59,130,246,0.08)"
     },
@@ -53,40 +53,26 @@ function Home() {
 
   const team = [
     {
-      name: "Dr. Sarah Wijaya",
-      role: "CEO & Founder",
-      emoji: "👩‍🔬",
-      desc: "PhD in Botany, 15+ years experience",
+      name: "Muhamad Rafi Aenal Yakin",
+      role: "Founder Web Developer & Inovator",
+      emoji: "🧑‍💼",
+      desc: "Seorang software engginer iot planner fokus web developer dan backend dan inovator GID 2025",
       color: "#FF6B6B"
     },
     {
-      name: "Alex Pratama",
-      role: "CTO",
+      name: "Nara Andra Tyaga",
+      role: "Mobile Developer",
       emoji: "👨‍💻",
-      desc: "IoT Specialist, Ex-Google Engineer",
+      desc: "Software engginer, membuat aplikasi mobile verdatica",
       color: "#3B82F6"
     },
-    {
-      name: "Maya Indah",
-      role: "Head of Design",
-      emoji: "🎨",
-      desc: "Award-winning UI/UX Designer",
-      color: "#8B5CF6"
-    },
-    {
-      name: "Rio Hartono",
-      role: "Plant Expert",
-      emoji: "🌿",
-      desc: "Certified Horticulturist",
-      color: "#10B981"
-    }
   ];
 
   const testimonials = [
     {
       name: "Budi Santoso",
       role: "Plant Enthusiast",
-      text: "PlantLog mengubah cara saya merawat tanaman. Sekarang koleksi 50+ tanaman saya selalu sehat!",
+      text: "Verdatica mengubah cara saya merawat tanaman. Sekarang koleksi 50+ tanaman saya selalu sehat!",
       emoji: "😊",
       rating: 5
     },
@@ -100,7 +86,7 @@ function Home() {
     {
       name: "Dian Pratama",
       role: "Botanical Garden Manager",
-      text: "PlantLog membantu kami memonitor ribuan tanaman dengan mudah. Interface yang intuitif!",
+      text: "Verdatica membantu kami memonitor ribuan tanaman dengan mudah. Interface yang intuitif!",
       emoji: "🏆",
       rating: 5
     }
@@ -706,71 +692,6 @@ function Home() {
           </div>
         </div>
       </section>
-
-      {/* ========== TESTIMONIALS SECTION ========== */}
-      <section style={{ padding: '100px 24px', position: 'relative', zIndex: 1 }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <h2 style={{
-              fontSize: 'clamp(34px, 4vw, 50px)',
-              fontWeight: 900,
-              marginBottom: '16px',
-              letterSpacing: '-0.5px'
-            }}>
-              <span style={{ color: '#1F2937' }}>Apa Kata</span>{' '}
-              <span className="gradient-text-green">Mereka?</span>
-            </h2>
-            <p style={{ fontSize: '18px', color: '#6B7280' }}>
-              Dipercaya oleh ribuan plant parents di seluruh Indonesia
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '32px'
-          }}>
-            {testimonials.map((t, i) => (
-              <div
-                key={i}
-                className="card-hover"
-                style={{
-                  background: 'white',
-                  padding: '44px 36px',
-                  borderRadius: '32px',
-                  border: '1px solid #F3F4F6'
-                }}
-              >
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-                  {t.emoji}
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                  {[...Array(t.rating)].map((_, i) => (
-                    <span key={i} style={{ color: '#F59E0B', fontSize: '20px', marginRight: '2px' }}>⭐</span>
-                  ))}
-                </div>
-                <p style={{
-                  fontSize: '17px',
-                  color: '#4B5563',
-                  lineHeight: 1.7,
-                  marginBottom: '24px',
-                  fontStyle: 'italic'
-                }}>
-                  "{t.text}"
-                </p>
-                <div style={{
-                  borderTop: '1px solid #F3F4F6',
-                  paddingTop: '20px'
-                }}>
-                  <div style={{ fontWeight: 700, color: '#1F2937', fontSize: '16px' }}>{t.name}</div>
-                  <div style={{ fontSize: '14px', color: '#6B7280', marginTop: '2px' }}>{t.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ========== CTA SECTION ========== */}
       <section style={{ padding: '80px 24px', position: 'relative', zIndex: 1 }}>
         <div style={{ maxWidth: '850px', margin: '0 auto' }}>
@@ -820,7 +741,7 @@ function Home() {
                 maxWidth: '500px',
                 margin: '0 auto 36px'
               }}>
-                Bergabunglah dengan 10,000+ plant parents yang sudah mempercayai PlantLog
+                Bergabunglah dengan 10+ plant parents yang sudah mempercayai Verdatica
               </p>
               <button
                 onClick={() => navigate('/login')}
@@ -890,7 +811,7 @@ function Home() {
                   P
                 </div>
                 <span style={{ fontSize: '22px', fontWeight: 800 }}>
-                  PLANT<span style={{ color: '#9CA3AF', fontWeight: 500 }}>LOG</span>
+                  Verdatica<span style={{ color: '#9CA3AF', fontWeight: 500 }}>TaniSmart</span>
                 </span>
               </div>
               <p style={{
@@ -914,7 +835,7 @@ function Home() {
                 Quick Links
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {['Home', 'About', 'Laporan', 'Katalog', 'Blog'].map((link) => (
+                {['Home', 'About', 'Laporan'].map((link) => (
                   <a
                     key={link}
                     href={`#${link.toLowerCase()}`}
@@ -945,13 +866,10 @@ function Home() {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#9CA3AF', fontSize: '15px' }}>
-                  <span style={{ fontSize: '18px' }}>📧</span> hello@plantlog.id
+                  <span style={{ fontSize: '18px' }}>📞</span> +62 898-4874-496
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#9CA3AF', fontSize: '15px' }}>
-                  <span style={{ fontSize: '18px' }}>📞</span> +62 812-3456-7890
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#9CA3AF', fontSize: '15px' }}>
-                  <span style={{ fontSize: '18px' }}>📍</span> Jakarta, Indonesia
+                  <span style={{ fontSize: '18px' }}>📍</span> Bogor, Indonesia
                 </div>
               </div>
             </div>
@@ -1013,7 +931,7 @@ function Home() {
             gap: '16px'
           }}>
             <p style={{ color: '#6B7280', fontSize: '14px' }}>
-              © 2026 PlantLog. Made with 💚 for plant lovers.
+              © 2026 Verdatica. Made with 💚 for plant lovers.
             </p>
             <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
               {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((item) => (

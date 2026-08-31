@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../services/apiClient";
+import Swal from 'sweetalert2';
 import {
     FaVideo,
     FaStop,
@@ -145,29 +147,41 @@ function FindPhisik() {
             const formData = new FormData();
             formData.append("image", blob, "photo.png");
 
-            const response = await fetch(
-                "http://localhost:8000/api/analyze-image",
-                {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        Accept: "application/json"
-                    }
+            const response = await apiClient.post("/analyze-image", formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'application/json'
                 }
-            );
+            });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Gagal menganalisis gambar");
-            }
+            const data = response.data;
 
             setAnalysisResult(data.analysis);
             setPhoto(null);
+            
+            Swal.fire({
+                title: 'Analisis Selesai!',
+                text: 'Hasil analisis foto berhasil didapatkan.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-3xl p-6' }
+            });
 
         } catch (err) {
             console.error(err);
             setError(err.message);
+            Swal.fire({
+                title: 'Gagal Menganalisis',
+                text: 'Terjadi kesalahan saat memproses foto.',
+                icon: 'error',
+                confirmButtonText: 'Tutup',
+                customClass: {
+                    popup: 'rounded-3xl p-6',
+                    confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md',
+                },
+                buttonsStyling: false,
+            });
         } finally {
             setIsUploading(false);
         }

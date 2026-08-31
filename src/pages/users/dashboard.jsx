@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../services/apiClient";
+import { useAuth } from "../../context/AuthContext";
+import { getCurrentDeviceId } from "../../services/monitoringService";
 import {
   FaThermometerHalf,
   FaTint,
@@ -24,7 +27,8 @@ import {
   FaWater,
   FaCloudSun,
   FaCalendarAlt,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaPlug
 } from 'react-icons/fa';
 import {
   MdDashboard,
@@ -38,10 +42,9 @@ import {
 } from 'react-icons/md';
 import { BsGraphUp, BsGraphDown } from 'react-icons/bs';
 
-// Komponen Card dengan desain lebih baik
-const Card = ({ children, className, style }) => (
+const Card = ({ children, className = '', style = {} }) => (
   <div
-    className={`bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 ${className}`}
+    className={`bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 ${className}`}
     style={style}
   >
     {children}
@@ -66,6 +69,7 @@ const getBadgeStyle = (status) => {
       return { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'text-gray-400' };
   }
 };
+
 
 // Komponen Sensor Card dengan desain premium
 const SensorCard = ({ title, value, color, icon, subtitle, status, trend, iconBg }) => {
@@ -155,11 +159,18 @@ function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isLive, setIsLive] = useState(true);
   const navigate = useNavigate();
+  const { getThresholds, getDeviceId } = useAuth();
+
+  // Ambil threshold & device ID secara reaktif
+  const thresholds = getThresholds();
+  const deviceId = getDeviceId(); // null jika belum connect
 
   const getData = () => {
-    fetch("http://localhost:8000/api/sensor/1")
-      .then((res) => res.json())
-      .then((data) => {
+    // Gunakan device ID user, fallback ke 1
+    const id = deviceId || getCurrentDeviceId();
+    apiClient.get(`/sensor/${id}`)
+      .then((res) => {
+        const data = res.data;
         const newData = {
           suhu: data.suhu || 0,
           kelembapanUdara: data.kelembapan_udara || 0,
@@ -171,6 +182,7 @@ function Dashboard() {
         setKelembapanUdara(newData.kelembapanUdara);
         setKelembapanTanah(newData.kelembapanTanah);
         setLastUpdate(new Date());
+        setIsLive(true);
 
         setHistory(prev => {
           const newHistory = [...prev, newData];
@@ -190,27 +202,28 @@ function Dashboard() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [deviceId]); // re-run ketika device ID berubah
 
   const getChartData = (key) => {
     return history.map(h => h[key] || 0);
   };
 
-  // Logika penentuan kondisi Kering, Basah, Lembap, dll.
+  // Logika penentuan kondisi berdasarkan threshold dinamis
   const getStatus = (value, type) => {
+    if (value === null || value === undefined) return 'Normal';
     if (type === 'suhu') {
-      if (value < 20) return 'Dingin';
-      if (value > 33) return 'Panas';
+      if (value < thresholds.suhu.dingin) return 'Dingin';
+      if (value > thresholds.suhu.panas) return 'Panas';
       return 'Normal';
     }
     if (type === 'kelembapanUdara') {
-      if (value < 40) return 'Kering';
-      if (value > 80) return 'Tinggi';
+      if (value < thresholds.kelembapanUdara.kering) return 'Kering';
+      if (value > thresholds.kelembapanUdara.tinggi) return 'Tinggi';
       return 'Normal';
     }
     if (type === 'kelembapanTanah') {
-      if (value < 40) return 'Kering';
-      if (value > 70) return 'Basah';
+      if (value < thresholds.kelembapanTanah.kering) return 'Kering';
+      if (value > thresholds.kelembapanTanah.basah) return 'Basah';
       return 'Lembap';
     }
     return 'Normal';
@@ -219,6 +232,31 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
       <div className="space-y-6">
+
+        {/* BANNER: Device belum terhubung */}
+        {!deviceId && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <FaExclamationTriangle className="text-amber-500 text-lg" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-700">Device belum terhubung</p>
+                <p className="text-xs text-amber-600">
+                  Data sensor menggunakan device default. Hubungkan device Arduino kamu untuk data yang spesifik.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/device')}
+              className="ml-auto flex items-center gap-2 bg-amber-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-amber-600 transition"
+            >
+              <FaPlug />
+              Hubungkan Device
+            </button>
+          </div>
+        )}
+
         {/* HEADER with gradient */}
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex flex-wrap justify-between items-center gap-4">
@@ -237,7 +275,10 @@ function Dashboard() {
               </div>
               <p className="text-green-50/80 text-sm flex items-center gap-2">
                 <FaMicrochip className="text-green-200" />
-                Sistem monitoring nutrisi dan lingkungan tanaman
+                {deviceId
+                  ? `Device #${deviceId} • Sistem monitoring nutrisi dan lingkungan tanaman`
+                  : 'Sistem monitoring nutrisi dan lingkungan tanaman'
+                }
               </p>
             </div>
 
@@ -250,6 +291,14 @@ function Dashboard() {
                 </span>
               </div>
               <button
+                onClick={() => navigate('/threshold')}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 text-sm font-medium backdrop-blur-sm flex items-center gap-2"
+                title="Setting Threshold"
+              >
+                <FaCog className="text-base" />
+                Pengaturan
+              </button>
+              <button
                 onClick={getData}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 text-sm font-medium backdrop-blur-sm flex items-center gap-2"
               >
@@ -259,6 +308,7 @@ function Dashboard() {
             </div>
           </div>
         </div>
+
 
         {/* SENSOR CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import apiClient from "../services/apiClient";
+import Swal from 'sweetalert2';
+import { useAuth } from "../context/AuthContext";
 import {
     FaHome,
     FaCamera,
@@ -25,34 +28,36 @@ import {
     FaBolt,
     FaCog,
     FaBell,
-    FaUserCircle
+    FaUserCircle,
+    FaPlug
 } from 'react-icons/fa';
 import { MdDashboard, MdSensorDoor } from 'react-icons/md';
 import { BiScan } from 'react-icons/bi';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { LuLogOut } from 'react-icons/lu';
 
+
 const Sidebar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { logout, getDeviceId } = useAuth();
     const [usn, setUsn] = useState(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
+
+    const deviceId = getDeviceId();
 
     useEffect(() => {
         let mounted = true;
 
-        fetch("http://localhost:8000/api/usn", {
-            method: "GET",
+        apiClient.get("/usn", {
             headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem('access_token')}`
+                "Authorization": `Bearer ${localStorage.getItem('TOKEN')}`
             }
         })
-            .then(res => res.json())
-            .then(user => {
+            .then(res => {
                 if (mounted) {
-                    console.log("Data user yang login:", user);
-                    setUsn(user);
+                    console.log("Data user yang login:", res.data);
+                    setUsn(res.data);
                 }
             })
             .catch(err => {
@@ -74,12 +79,59 @@ const Sidebar = () => {
         return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
     };
 
+    const handleLogout = () => {
+        Swal.fire({
+            title: 'Yakin mau keluar?',
+            text: 'Sesi Anda di Verdatica akan diakhiri.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Keluar',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            customClass: {
+                popup: 'rounded-3xl p-6',
+                confirmButton: 'bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md mx-2',
+                cancelButton: 'bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-5 py-2.5 rounded-xl mx-2',
+            },
+            buttonsStyling: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Berhasil Keluar!',
+                    text: 'Sampai jumpa kembali.',
+                    icon: 'success',
+                    timer: 1500, 
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'rounded-3xl p-6',
+                    }
+                }).then(() => {
+                    logout();
+                    navigate('/login');
+                });
+            }
+        });
+    };
+
     const navItems = [
         {
             name: "Dashboard",
             path: "/dashboard",
             icon: <MdDashboard />,
             active: location.pathname === "/dashboard"
+        },
+        {
+            name: "Monitoring Tanaman",
+            path: "/plants",
+            icon: <FaSeedling />,
+            active: location.pathname === "/plants"
+        },
+        {
+            name: "Koneksi Alat",
+            path: "/device",
+            icon: <FaPlug />,
+            active: location.pathname === "/device",
+            badge: !deviceId ? '!' : null, // badge notifikasi jika belum connect
         },
         {
             name: "Foto fisik",
@@ -100,7 +152,7 @@ const Sidebar = () => {
             active: location.pathname === "/gallery-physic"
         },
         {
-            name: "Chat",
+            name: "Tanya AI",
             path: "/chat",
             icon: <FaComments />,
             active: location.pathname === "/chat"
@@ -113,6 +165,7 @@ const Sidebar = () => {
         { name: "Sensor Tanah", status: "online", icon: <FaSeedling /> },
         { name: "Sensor Cahaya", status: "offline", icon: <FaSun /> },
     ];
+
 
     return (
         <aside className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-sm transition-all duration-300 z-50 ${isCollapsed ? 'w-[72px]' : 'w-[230px]'
@@ -164,12 +217,23 @@ const Sidebar = () => {
                                 } ${isCollapsed ? 'justify-center px-2 border-l-0' : ''}`}
                             title={isCollapsed ? item.name : ''}
                         >
-                            <span className={`text-base ${item.active ? 'text-green-600' : 'text-gray-400 group-hover:text-green-500'} flex-shrink-0`}>
+                            <span className={`text-base ${item.active ? 'text-green-600' : 'text-gray-400 group-hover:text-green-500'} flex-shrink-0 relative`}>
                                 {item.icon}
+                                {/* Badge notifikasi (misal: device belum connect) */}
+                                {item.badge && (
+                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-white text-[8px] font-black rounded-full flex items-center justify-center leading-none">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </span>
                             {!isCollapsed && (
                                 <>
                                     <span className="flex-1 truncate">{item.name}</span>
+                                    {item.badge && !item.active && (
+                                        <span className="px-1.5 py-0.5 bg-amber-100 text-amber-600 text-[10px] font-bold rounded-full">
+                                            {item.badge}
+                                        </span>
+                                    )}
                                     {item.active && (
                                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0" />
                                     )}
@@ -183,25 +247,26 @@ const Sidebar = () => {
 
                     {/* Settings & Logout */}
                     <Link
-                        to="/settings"
+                        to="/threshold"
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-all duration-200 ${isCollapsed ? 'justify-center px-2' : ''
                             }`}
-                        title={isCollapsed ? 'Settings' : ''}
+                        title={isCollapsed ? 'Threshold' : ''}
                     >
                         <FaCog className={`text-base ${isCollapsed ? '' : 'text-gray-400'}`} />
-                        {!isCollapsed && <span>Settings</span>}
+                        {!isCollapsed && <span>Pengaturan</span>}
                     </Link>
 
-                    <Link
-                        to="/"
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-all duration-200 ${isCollapsed ? 'justify-center px-2' : ''
+                    <button
+                        onClick={handleLogout}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-all duration-200 ${isCollapsed ? 'justify-center px-2' : ''
                             }`}
                         title={isCollapsed ? 'Logout' : ''}
                     >
                         <LuLogOut className="text-base" />
                         {!isCollapsed && <span>Logout</span>}
-                    </Link>
+                    </button>
                 </nav>
+
 
                 {/* Device Status */}
                 {!isCollapsed ? (

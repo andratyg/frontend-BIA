@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaMicrochip, FaLeaf, FaSpinner } from 'react-icons/fa';
+import { FaMicrochip, FaLeaf, FaSpinner, FaTimes } from 'react-icons/fa';
 import { BiBot } from 'react-icons/bi';
+import { sendAIMessage } from "../../services/aiService";
+import { getPlants, plantProfiles } from "../../services/plantService";
 
 function Chat() {
     const [messages, setMessages] = useState([
@@ -13,6 +15,16 @@ function Chat() {
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const chatEndRef = useRef(null);
+
+    // Plant context for AI
+    const [plants, setPlants] = useState([]);
+    const [selectedPlant, setSelectedPlant] = useState(null);
+
+    useEffect(() => {
+        getPlants().then(data => {
+            if (Array.isArray(data)) setPlants(data);
+        }).catch(() => {});
+    }, []);
 
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,20 +45,11 @@ function Chat() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ message: currentInput }),
-            });
-
-            const data = await response.json();
+            const data = await sendAIMessage({ message: currentInput, plant: selectedPlant });
 
             const botResponse = {
                 id: Date.now() + 1,
-                text: data.reply,
+                text: data.reply || data.message || "Maaf, tidak ada respons dari AI.",
                 sender: "bot"
             };
             setMessages((prev) => [...prev, botResponse]);
@@ -93,10 +96,42 @@ function Chat() {
                             </span>
                         </div>
                     </div>
+
+                    {/* Plant Context Selector */}
+                    {plants.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                            <p className="text-xs font-semibold text-gray-500 mb-2">🌱 Konteks Tanaman (Opsional)</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setSelectedPlant(null)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${!selectedPlant ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                >
+                                    Umum
+                                </button>
+                                {plants.map((p) => {
+                                    const profile = plantProfiles[p.type] || plantProfiles.general;
+                                    return (
+                                        <button
+                                            key={p.id}
+                                            onClick={() => setSelectedPlant(p)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedPlant?.id === p.id ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        >
+                                            {profile.icon} {p.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {selectedPlant && (
+                                <p className="text-xs text-emerald-600 mt-2">
+                                    ✅ AI akan menjawab sesuai konteks: <strong>{selectedPlant.name}</strong> ({plantProfiles[selectedPlant.type]?.label || 'General'})
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Chat Container */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-280px)]">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-380px)] min-h-[400px]">
                     {/* Chat Messages */}
                     <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 bg-gradient-to-b from-gray-50 to-white">
                         {messages.map((msg) => (
@@ -129,7 +164,11 @@ function Chat() {
                                 <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm">
                                     <div className="flex items-center gap-2">
                                         <FaSpinner className="text-emerald-500 animate-spin" />
-                                        <span className="text-sm text-gray-500">Verdatica sedang mengetik...</span>
+                                        <span className="text-sm text-gray-500">
+                                            {selectedPlant
+                                                ? `AI sedang menganalisis tanaman ${selectedPlant.name}...`
+                                                : 'Verdatica sedang mengetik...'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +185,7 @@ function Chat() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 disabled={isLoading}
-                                placeholder={isLoading ? "Tunggu sebentar..." : "Tanyakan sesuatu tentang tanaman..."}
+                                placeholder={isLoading ? "Tunggu sebentar..." : selectedPlant ? `Tanyakan tentang ${selectedPlant.name}...` : "Tanyakan sesuatu tentang tanaman..."}
                                 className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:border-emerald-500 transition-all text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                             <button
@@ -165,7 +204,7 @@ function Chat() {
                             </button>
                         </form>
                         <p className="text-xs text-gray-400 mt-3 text-center">
-                            💡 Tips: Tanyakan tentang perawatan, penyakit, atau kondisi tanaman Anda
+                            💡 Tips: Pilih tanaman di atas agar AI memberikan analisis yang lebih spesifik
                         </p>
                     </div>
                 </div>

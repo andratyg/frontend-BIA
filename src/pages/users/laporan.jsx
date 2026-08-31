@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import apiClient from "../../services/apiClient";
 import {
     FaMicrochip,
     FaClock,
@@ -26,9 +27,9 @@ function Laporan() {
     });
 
     const getData = () => {
-        fetch("http://localhost:8000/api/sensor/1")
-            .then((res) => res.json())
-            .then((data) => {
+        apiClient.get("/sensor/1")
+            .then((res) => {
+                const data = res.data;
                 console.log(data);
 
                 setSensorData((prevState) => {

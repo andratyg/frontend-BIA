@@ -1,26 +1,25 @@
 import '../../app.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../services/apiClient';
+import Swal from 'sweetalert2';
 
 function Register() {
     const navigate = useNavigate();
 
     // State untuk menangkap input user
-    const [name, setName] = useState(''); // Tambahan untuk Nama
+    const [name, setName] = useState(''); 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [passwordConfirmation, setPasswordConfirmation] = useState(''); // Opsional: Konfirmasi Password
-    const [error, setError] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState(''); 
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/register', {
+            const response = await apiClient.post('/register', {
                 name: name,
                 email: email,
                 password: password,
@@ -30,19 +29,40 @@ function Register() {
             // Biasanya setelah register langsung dapat token (tergantung backend kamu)
             if (response.data.access_token) {
                 localStorage.setItem('TOKEN', response.data.access_token);
-                navigate('/login'); // Lempar ke Home
+                showSuccess('Pendaftaran Berhasil!', 'Akun Anda telah dibuat. Silakan login.', '/login');
             } else {
-                // Jika tidak otomatis login, lempar ke halaman login
-                navigate('/');
+                showSuccess('Pendaftaran Berhasil!', 'Akun Anda telah dibuat. Silakan login.', '/');
             }
 
         } catch (err) {
-            // Ambil pesan error dari Laravel (biasanya err.response.data.message)
-            setError(err.response?.data?.message || 'Gagal mendaftar, cek kembali data kamu!');
+            Swal.fire({
+                title: 'Pendaftaran Gagal',
+                text: err.response?.data?.message || 'Gagal mendaftar, cek kembali data kamu!',
+                icon: 'error',
+                confirmButtonText: 'Coba Lagi',
+                customClass: {
+                    popup: 'rounded-3xl p-6',
+                    confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md',
+                },
+                buttonsStyling: false,
+            });
             console.error(err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const showSuccess = (title, text, redirectPath) => {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: { popup: 'rounded-3xl p-6' }
+        }).then(() => {
+            navigate(redirectPath);
+        });
     };
 
     return (
@@ -61,9 +81,6 @@ function Register() {
                         <h2 className="text-3xl font-black text-stone-800 tracking-tight">Buat Akun</h2>
                         <p className="text-stone-500 font-medium mt-2">Mulai kelola laporan tanamanmu</p>
                     </div>
-
-                    {/* Tampilkan Pesan Error */}
-                    {error && <div className="mb-4 p-3 bg-red-100 text-red-600 text-sm font-bold rounded-xl text-center">{error}</div>}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         

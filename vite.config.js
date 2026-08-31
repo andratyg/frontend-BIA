@@ -29,8 +29,10 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "react-icons": ["react-icons/fa", "react-icons/md", "react-icons/bs"],
+        manualChunks(id) {
+          if (id.includes('react-icons')) {
+            return 'react-icons';
+          }
         },
       },
     },
