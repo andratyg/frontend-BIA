@@ -30,7 +30,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          "react-icons": ["react-icons/fa", "react-icons/md", "react-icons/bs"],
+        if (id.includes("node_modules")) {
+                    return "vendor";
         },
       },
     },
