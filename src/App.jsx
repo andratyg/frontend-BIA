@@ -1,4 +1,4 @@
-import './app.css'
+import './App.css'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import AppContent from './route/Routes.jsx';
 
